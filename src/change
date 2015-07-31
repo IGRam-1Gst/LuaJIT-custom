@@ -1,0 +1,31 @@
+lj_lex.h
+ * TKDEF에 addto, subto, multo, divto, modto 추가
+
+lj_lex.c
+ * llex에서 case '+', case '-', case '*', case '/', case '%' 추가해서
+   +=, -=, *=, /=, %=이 가능하도록.
+
+lj_parse.h
+
+lj_parse.c
+ * parse_assignment
+  : 대입문 분석.
+ * expr(LesState *ls, ExpDesc *v)
+  : ls로 구문을 분석해서 v에 씀.
+  : expr_binop(ls, v, 0);
+ * expr_tonextreg(FuncState ls->fs, ExpDesc *v);
+  : 다음 구문으로 넘어갈 수 있게 준비. list에서 쓰임.
+ * expr_binop(LexState *ls, ExpDest *v, uint32_t limit)
+  : ls로 구문을 분석해서 v에 씀. limit는 연산자 우선순위 저장
+ * bcemit_binop_left(FuncState *fs, BinOpr op, ExpDest *e)
+  : 연산자를 가지고 왼쪽 표현식 정리해 넣음
+ * bcemit_binop(FuncState *fs, BinOpr op, ExpDest *e1, ExpDest *e2)
+
+
+0. += 스위치 꺼진 상태
+1. parse_call_and_assign 에서 lj_lex_savelastp
+2. += 스위치를 꺼둔 상태로 parse_assignment를 호출
+3. parse_assignment에서 lj_lex_swaplastp를 호출, += 스위치 켬.
+3.5. += 스위치가 켜져있으면 +=을 +로 변형 시켜서 파싱함. 꺼져있으면 따로처리.
+4. 다시 swaplastp를 하지는 말고 그대로 대입을 처리.
+5. 끝!
