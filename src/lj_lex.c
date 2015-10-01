@@ -261,17 +261,27 @@ static int llex(LexState *ls, TValue *tv)
 {
   lj_str_resetbuf(&ls->sb);
   for (;;) {
-    if (lj_char_isident(ls->current)) {
+    if (lj_char_isident(ls->current) || ls->current == '@') {
       GCstr *s;
       if (lj_char_isdigit(ls->current)) {  /* Numeric literal. */
 	lex_number(ls, tv);
 	return TK_number;
       }
       /* Identifier or reserved word. */
-      do {
-	save_and_next(ls);
-      } while (lj_char_isident(ls->current));
-      s = lj_parse_keepstr(ls, ls->sb.buf, ls->sb.n);
+			if (ls->current == '@') {
+				/* Convert @ to 'self' */
+				const char *src = "self";
+				next(ls);
+				while(*src){
+					save(ls, char2int(*src));
+					src++;
+				}
+			} else {
+				do {
+					save_and_next(ls);
+				} while (lj_char_isident(ls->current));
+			}
+			s = lj_parse_keepstr(ls, ls->sb.buf, ls->sb.n);
       setstrV(ls->L, tv, s);
       if (s->reserved > 0)  /* Reserved word? */
 	return TK_OFS + s->reserved;

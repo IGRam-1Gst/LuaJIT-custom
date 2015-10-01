@@ -29,3 +29,5 @@ Custom Version Changes
  - A /= B  =>  A = A / B
  - A %= B  =>  A = A % B
 
+* Other
+ - @ acts like identifier 'self'
