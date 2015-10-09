@@ -2059,12 +2059,13 @@ static void synlevel_begin(LexState *ls)
 #define synlevel_end(ls)	((ls)->level--)
 
 /* Convert token to binary operator. */
-static BinOpr token2binop(LexToken tok, int *priority)
+static BinOpr token2binop(LexState *ls, LexToken tok, int *priority)
 {
   *priority = 1;
-  if(TK_addto <= tok && tok <= TK_modto){
+  if(ls->swapped && TK_addto <= tok && tok <= TK_modto){
 	tok =  "+-*/%"[tok - TK_addto];
 	*priority = 0;
+	ls->swapped = 0;
   }
   switch (tok) {
   case '+':	return OPR_ADD;
@@ -2129,7 +2130,7 @@ static BinOpr expr_binop(LexState *ls, ExpDesc *v, uint32_t limit)
   int pr;
   synlevel_begin(ls);
   expr_unop(ls, v);
-  op = token2binop(ls->token, &pr);
+  op = token2binop(ls, ls->token, &pr);
   while (op != OPR_NOBINOPR && priority[op].left > limit) {
     ExpDesc v2;
     BinOpr nextop;
@@ -2237,6 +2238,7 @@ static void parse_assignment(LexState *ls, LHSVarList *lh, BCReg nvars)
     parse_assignment(ls, &vl, nvars+1);
   } else if (nvars == 1 && lex_range(ls, TK_addto, TK_modto)) { /* Parse += */
 	lj_lex_swaplastp(ls);
+    ls->swapped = 1;
 	expr(ls, &e); /* Parse Right Object */
 	bcemit_store(ls->fs, &lh->v, &e);
 	return;

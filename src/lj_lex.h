@@ -86,6 +86,7 @@ typedef struct LexState {
 	MSize n;
 	const char *p;
   } lastp;
+  int swapped;
 } LexState;
 
 LJ_FUNC int lj_lex_setup(lua_State *L, LexState *ls);
